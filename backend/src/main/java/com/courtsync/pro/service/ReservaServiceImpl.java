@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +26,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReservaServiceImpl implements ReservaService {
 
-        private static final int ANTICIPACION_MINIMA_HORAS = 5;
+        private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Bogota");
+        private static final int ANTICIPACION_MINIMA_HORAS = 2;
         private static final int MAX_RESERVAS_ACTIVAS_POR_DIA = 2;
         private static final int EXPIRACION_PAGO_MINUTOS = 10;
         private static final double PORCENTAJE_ANTICIPO = 0.5;
@@ -38,8 +39,8 @@ public class ReservaServiceImpl implements ReservaService {
         @Override
         @Transactional
         public ReservaResponse crearReserva(CrearReservaRequest request, Long usuarioId) {
-                OffsetDateTime ahora = OffsetDateTime.now(ZoneOffset.UTC);
-                OffsetDateTime inicio = request.fechaHoraInicio().withOffsetSameInstant(ZoneOffset.UTC);
+                OffsetDateTime ahora = OffsetDateTime.now(ZONA_HORARIA);
+                OffsetDateTime inicio = request.fechaHoraInicio().atZoneSameInstant(ZONA_HORARIA).toOffsetDateTime();
                 OffsetDateTime fin = inicio.plusHours(request.duracionHoras());
 
                 // RN-02: Mínimo 2 horas de anticipación respecto a fechaHoraInicio
@@ -51,8 +52,8 @@ public class ReservaServiceImpl implements ReservaService {
 
                 // RN-01: Máximo 2 reservas activas por jugador en la misma fecha calendario
                 LocalDate fechaReserva = inicio.toLocalDate();
-                OffsetDateTime inicioDia = fechaReserva.atStartOfDay().atOffset(ZoneOffset.UTC);
-                OffsetDateTime finDia = fechaReserva.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+                OffsetDateTime inicioDia = fechaReserva.atStartOfDay(ZONA_HORARIA).toOffsetDateTime();
+                OffsetDateTime finDia = fechaReserva.plusDays(1).atStartOfDay(ZONA_HORARIA).toOffsetDateTime();
 
                 long reservasActivasUsuario = reservaRepository.countReservasActivasPorUsuarioEnFecha(
                                 usuarioId, inicioDia, finDia, ahora);

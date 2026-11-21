@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CanchaServiceImpl implements CanchaService {
 
+    private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Bogota");
     private static final int HORA_APERTURA = 8;
     private static final int HORA_CIERRE = 22;
     private static final DateTimeFormatter HORA_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
@@ -36,8 +37,8 @@ public class CanchaServiceImpl implements CanchaService {
     @Override
     @Transactional(readOnly = true)
     public List<DisponibilidadCanchaResponse> consultarDisponibilidad(LocalDate fecha, TipoCancha tipoCancha) {
-        LocalDate hoyUtc = LocalDate.now(ZoneOffset.UTC);
-        if (fecha.isBefore(hoyUtc)) {
+        LocalDate hoy = LocalDate.now(ZONA_HORARIA);
+        if (fecha.isBefore(hoy)) {
             throw new FechaInvalidaException("No se puede consultar disponibilidad para una fecha pasada: " + fecha);
         }
 
@@ -49,9 +50,9 @@ public class CanchaServiceImpl implements CanchaService {
             return List.of();
         }
 
-        OffsetDateTime ahora = OffsetDateTime.now(ZoneOffset.UTC);
-        OffsetDateTime inicioDia = fecha.atTime(HORA_APERTURA, 0).atOffset(ZoneOffset.UTC);
-        OffsetDateTime finDia = fecha.atTime(HORA_CIERRE, 0).atOffset(ZoneOffset.UTC);
+        OffsetDateTime ahora = OffsetDateTime.now(ZONA_HORARIA);
+        OffsetDateTime inicioDia = fecha.atTime(HORA_APERTURA, 0).atZone(ZONA_HORARIA).toOffsetDateTime();
+        OffsetDateTime finDia = fecha.atTime(HORA_CIERRE, 0).atZone(ZONA_HORARIA).toOffsetDateTime();
 
         List<Long> canchaIds = canchas.stream().map(Cancha::getId).toList();
         Map<Long, List<Reserva>> reservasPorCancha = reservaRepository
@@ -73,8 +74,8 @@ public class CanchaServiceImpl implements CanchaService {
         for (int hora = HORA_APERTURA; hora < HORA_CIERRE; hora++) {
             LocalTime inicioLocal = LocalTime.of(hora, 0);
             LocalTime finLocal = LocalTime.of(hora + 1, 0);
-            OffsetDateTime inicioSlot = fecha.atTime(inicioLocal).atOffset(ZoneOffset.UTC);
-            OffsetDateTime finSlot = fecha.atTime(finLocal).atOffset(ZoneOffset.UTC);
+            OffsetDateTime inicioSlot = fecha.atTime(inicioLocal).atZone(ZONA_HORARIA).toOffsetDateTime();
+            OffsetDateTime finSlot = fecha.atTime(finLocal).atZone(ZONA_HORARIA).toOffsetDateTime();
 
             boolean ocupado = reservas.stream()
                     .anyMatch(r -> r.getFechaHoraInicio().isBefore(finSlot) && r.getFechaHoraFin().isAfter(inicioSlot));

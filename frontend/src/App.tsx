@@ -14,8 +14,22 @@ interface SlotSeleccionado {
   franja: FranjaHorariaDTO;
 }
 
-function getTodayUtcIso(): string {
-  return new Date().toISOString().slice(0, 10);
+function getTodayLocalIso(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function toLocalOffsetIso(fecha: string, hora: string): string {
+  const localDate = new Date(`${fecha}T${hora}:00`);
+  const offsetMinutes = -localDate.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absMinutes = Math.abs(offsetMinutes);
+  const offsetHours = String(Math.floor(absMinutes / 60)).padStart(2, '0');
+  const offsetMins = String(absMinutes % 60).padStart(2, '0');
+  return `${fecha}T${hora}:00${sign}${offsetHours}:${offsetMins}`;
 }
 
 function formatCurrency(value: number): string {
@@ -34,7 +48,7 @@ function formatCountdown(secondsLeft: number): string {
 }
 
 export function App() {
-  const [fecha, setFecha] = useState<string>(getTodayUtcIso);
+  const [fecha, setFecha] = useState<string>(getTodayLocalIso);
   const [tipoCancha, setTipoCancha] = useState<TipoCancha | ''>('');
   const [canchas, setCanchas] = useState<DisponibilidadCanchaResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -108,7 +122,7 @@ export function App() {
     setErrorState(null);
 
     try {
-      const fechaHoraInicio = `${fecha}T${slotSeleccionado.franja.horaInicio}:00Z`;
+      const fechaHoraInicio = toLocalOffsetIso(fecha, slotSeleccionado.franja.horaInicio);
       const reserva = await crearReserva({
         canchaId: slotSeleccionado.cancha.canchaId,
         fechaHoraInicio,
@@ -182,8 +196,13 @@ export function App() {
 
           <div className="summary-box">
             <div className="summary-row">
-              <span>Fecha y hora (UTC):</span>
-              <strong>{new Date(reservaConfirmada.fechaHoraInicio).toUTCString()}</strong>
+              <span>Fecha y hora:</span>
+              <strong>
+                {new Date(reservaConfirmada.fechaHoraInicio).toLocaleString('es-CO', {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}
+              </strong>
             </div>
             <div className="summary-row">
               <span>Duración:</span>
@@ -217,7 +236,7 @@ export function App() {
                 id="fecha-input"
                 type="date"
                 value={fecha}
-                min={getTodayUtcIso()}
+                min={getTodayLocalIso()}
                 disabled={isLoading}
                 onChange={(e) => setFecha(e.target.value)}
               />
@@ -338,7 +357,7 @@ export function App() {
 
             <div className="summary-box">
               <div className="summary-row">
-                <span>Inicio (UTC):</span>
+                <span>Inicio:</span>
                 <strong>
                   {fecha} {slotSeleccionado.franja.horaInicio}
                 </strong>
