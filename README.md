@@ -22,6 +22,11 @@ cd backend
 mvn test
 ```
 
+Suites del backend (patrón AAA):
+- `ReservaServiceTest` — unitarias del servicio (JUnit 5 + Mockito): camino feliz, RN-01, RN-02 (1h59 vs 2h01), RNF-02 (409), 404 y eventos (RNF-04).
+- `ReservaControllerIntegrationTest` — `@WebMvcTest` + `MockMvc`: 201, 400 (`@NotNull`/`@Min`/`@Max`), 409 y 422 con `ErrorResponse`.
+- `ReservaRepositoryTest` — `@DataJpaTest` sobre H2: solapamiento de horarios, contiguos, canceladas/expiradas y conteo diario.
+
 ### Frontend (TypeScript + Vite Build)
 ```bash
 cd frontend

@@ -26,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReservaServiceImpl implements ReservaService {
 
-        private static final int ANTICIPACION_MINIMA_HORAS = 5;
+        private static final int ANTICIPACION_MINIMA_HORAS = 2;
         private static final int MAX_RESERVAS_ACTIVAS_POR_DIA = 2;
         private static final int EXPIRACION_PAGO_MINUTOS = 10;
         private static final double PORCENTAJE_ANTICIPO = 0.5;
