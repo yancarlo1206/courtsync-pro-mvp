@@ -27,7 +27,7 @@ import java.util.UUID;
 public class ReservaServiceImpl implements ReservaService {
 
         private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Bogota");
-        private static final int ANTICIPACION_MINIMA_HORAS = 2;
+        private static final int ANTICIPACION_MINIMA_HORAS = 3;
         private static final int MAX_RESERVAS_ACTIVAS_POR_DIA = 2;
         private static final int EXPIRACION_PAGO_MINUTOS = 10;
         private static final double PORCENTAJE_ANTICIPO = 0.5;
