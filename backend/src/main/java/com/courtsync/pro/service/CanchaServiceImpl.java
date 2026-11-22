@@ -28,7 +28,7 @@ public class CanchaServiceImpl implements CanchaService {
 
     private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Bogota");
     private static final int HORA_APERTURA = 8;
-    private static final int HORA_CIERRE = 22;
+    private static final int HORA_CIERRE = 23;
     private static final DateTimeFormatter HORA_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     private final CanchaRepository canchaRepository;
